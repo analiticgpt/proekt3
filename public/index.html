@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Диалоговое Окно Чата</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+  }
+  #chat-window {
+    width: 320px;
+    margin: 20px auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  #messages {
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+  }
+  .user-message, .ai-message {
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    background-color: #dbf3fa;
+    border-radius: 5px;
+    display: inline-block;
+  }
+  #chat-input, #quick-replies {
+    padding: 10px;
+    background-color: #f7f7f7;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+  }
+  #user-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  #send, .quick-reply-btn {
+    padding: 10px 15px;
+    background-color: #2e8b57;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="chat-window">
+  <div id="messages">
+    <!-- Сообщения чата будут отображаться здесь -->
+  </div>
+  <div id="quick-replies">
+    <button class="quick-reply-btn" onclick="sendQuickReply('Я хочу подать на банкротство')">Банкротство</button>
+    <button class="quick-reply-btn" onclick="sendQuickReply('Какие документы нужны?')">Документы</button>
+    <button class="quick-reply-btn" onclick="sendQuickReply('Последствия банкротства')">Последствия</button>
+  </div>
+  <div id="chat-input">
+    <input type="text" id="user-input" placeholder="Введите ваше сообщение здесь...">
+    <button id="send">Отправить</button>
+  </div>
+</div>
+
+<script>
+ function sendQuickReply(message) {
+  document.getElementById('user-input').value = message;
+  sendMessage(message);  // Отправляем сообщение
+}
+
+document.getElementById('send').addEventListener('click', () => {
+  const userMessage = document.getElementById('user-input').value.trim();
+  if (userMessage) {
+    sendMessage(userMessage);  // Отправляем сообщение
+  } else {
+    alert('Пожалуйста, введите ваше сообщение.');
+  }
+});
+
+async function sendMessage(message) {
+  const response = await fetch('http://localhost:3000/send-message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: message, userID: 'some-user-id' })
+  });
+  const data = await response.json();
+  addMessageToChat('user', message);
+  addMessageToChat('ai', data.result);
+}
+
+function addMessageToChat(role, message) {
+  const messageElement = document.createElement('div');
+  messageElement.textContent = message;
+  messageElement.className = role === 'ai' ? 'ai-message' : 'user-message';
+  document.getElementById('messages').appendChild(messageElement);
+  document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+  document.getElementById('user-input').value = '';
+}
+
+</script>
+
+</body>
+</html>
